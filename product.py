@@ -1,0 +1,23 @@
+class Product:
+    def __init__(self, tree):
+        self.data = {'product_id': '',
+                     'storecode': '',
+                     'product_code': '',
+                     'description': '',
+                     'upc': '',
+                     'family': '',
+                     'created_datetime': '',
+                     'modified_datetime': '',
+                     'sell_price': '',
+                     'GA_price': '',
+                     'FL_price': '',
+                     'cost': '',
+                     'average_cost': '',
+                     'raw_cost': '',
+                     'margin': '',
+                     'friendly_id': '',
+                     'notes': '',
+                     'current': '',
+                     'editable': '',
+                     'inventoried': '',
+                     'editable_sell': ''}
