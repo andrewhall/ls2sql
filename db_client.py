@@ -1,4 +1,4 @@
-import pymssql
+import pymssql, logging
 
 server = '25.15.227.115'
 user = 'Lightspeed'

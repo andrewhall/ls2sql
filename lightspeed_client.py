@@ -1,4 +1,4 @@
-import requests
+import requests, logging
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from xml.etree import ElementTree
 
