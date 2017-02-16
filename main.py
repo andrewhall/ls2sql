@@ -1,8 +1,6 @@
-import time
-import lightspeed_client
-import mom_client
+import time, lightspeed_client, db_client, logging
 
-stores = mom_client.get_store_list()
+stores = db_client.get_store_list()
 print('*** STORE LIST CREATED ***', end='\n\n')
 
 for store in stores:
@@ -26,10 +24,10 @@ for store in stores:
         lineitems = lightspeed_client.build_lineitems(invoices)
         print('* BUILDING LINEITEMS: COMPLETE ')
 
-        mom_client.insert_invoices(invoices)
+        db_client.insert_invoices(invoices)
         print('* INSERTING INVOICES: COMPLETE')
 
-        mom_client.insert_lineitems(lineitems)
+        db_client.insert_lineitems(lineitems)
         print('* INSERTING LINEITEMS: COMPLETE')
 
         duration = time.time()-start

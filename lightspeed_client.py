@@ -1,6 +1,4 @@
 import requests
-from invoice import Invoice
-from lineitem import Lineitem
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from xml.etree import ElementTree
 
