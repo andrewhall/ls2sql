@@ -10,7 +10,6 @@ db = 'Staging'
 def get_store_list():
     logging.info('Retrieving store data.')
 
-    #
     store_list = []
     conn = pymssql.connect(server, user, password, db)
     cursor = conn.cursor(as_dict=True)
@@ -22,29 +21,28 @@ def get_store_list():
     return store_list
 
 
+def insert_xml(store, type, xml):
+    columns = { 'invoice': 'last_invoice_id',
+                'products': 'last_product-id',
+                'purchase_order': 'last_purchase_order',
+                'supplier': 'last_supplier_id',
+                'customer': 'last_customer_id',
+                'user': 'last_user_id'}
 
-# def insert_xml(invoices):
-#     conn = pymssql.connect(server, user, password, db)
-#     cursor = conn.cursor()
-#
-#     for invoice in invoices:
-#         cursor.execute('''
-#             INSERT INTO LIGHTSPEED_INVOICES
-#             (invoice_id, storecode, document_id,
-#             friendly_id, datetime_created, datetime_modified,
-#             customer, margin, primary_user,
-#             secondary_user, subtotal, tax,
-#             total, owing, paid)
-#             VALUES
-#             (%(invoice_id)s, %(storecode)s, %(document_id)s,
-#             %(friendly_id)s, %(datetime_created)s, %(datetime_modified)s,
-#             %(customer)s, %(margin)s, %(primary_user)s,
-#             %(secondary_user)s, %(subtotal)s, %(tax)s,
-#             %(total)s, %(owing)s, %(paid)s)''', invoice.data)
-#         conn.commit()
-#         cursor.execute('''UPDATE LIGHTSPEED_STORES
-#                           SET last_invoice = %(invoice_id)s
-#                           WHERE storecode = %(storecode)s;''', invoice.data)
-#         conn.commit()
-#
-#     conn.close()
+    conn = pymssql.connect(server, user, password, db)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        INSERT INTO Staging.Documents
+        (Store_Code, Document_Type, Document_Text)
+        VALUES
+        (?, ?, ?)''', store, type, xml)
+    conn.commit()
+
+
+    cursor.execute('''UPDATE Staging.lightspeed_stores
+                      SET last_invoice = %(invoice_id)s
+                      WHERE storecode = %(storecode)s;''', invoice.data)
+    conn.commit()
+
+    conn.close()

@@ -1,6 +1,6 @@
 import time, lightspeed_client, db_client, logging
 
-logging.basicConfig(filename='ls2sql.log', format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
+logging.basicConfig(filename='ls2sql.log', format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y.%m.%d %I:%M:%S %p', level=logging.DEBUG)
 
 def main():
     logging.info('Application started.')

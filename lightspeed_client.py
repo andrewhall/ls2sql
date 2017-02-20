@@ -8,9 +8,41 @@ headers = {'User-Agent': 'com.sunsetnovelties.invoices/1.0',
            'Content-Type': 'text/xml'}
 
 def process_store(current_store):
-    logging.info('%s initiating.' % store['store'])
+    logging.info('%s initiating.' % current_store['store'])
 
-    logging.info('%s completed.' % store['store'])
+    imbed_invoices(current_store)
+    capture_customers(current_store)
+    unite_users(current_store)
+    salvage_suppliers(current_store)
+    procure_purchase_orders(current_store)
+    produce_products(current_store)
+
+    logging.info('%s completed.' % current_store['store'])
+
+
+def imbed_invoices(current_store):
+    # stuff
+
+
+def capture_customers(current_store):
+    # more stuff
+
+
+def unite_users(current_store):
+    # stuffety stuff
+
+
+def salvage_suppliers(current_store):
+    # stuff
+
+
+def procure_purchase_orders(current_store):
+    # stuff
+
+
+def produce_products(current_store):
+    # stuff
+
 
 # def get_invoice_list(current_store):
 #     invoice_list = []
