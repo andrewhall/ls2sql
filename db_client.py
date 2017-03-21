@@ -1,4 +1,5 @@
 import pymssql, logging
+# from xml.etree import ElementTree
 
 # SQL login credentials
 server = '25.15.227.115'
@@ -7,42 +8,39 @@ password = 'Lightspeed123'
 db = 'Staging'
 
 
+# retrieve store information from SQL
 def get_store_list():
     logging.info('Retrieving store data.')
 
     store_list = []
     conn = pymssql.connect(server, user, password, db)
+
+    # return each row in result as a dict
     cursor = conn.cursor(as_dict=True)
-    cursor.execute('SELECT * FROM Staging.lightspeed_stores')
+    cursor.execute('Staging.usp_Get_Store_Data')
     for row in cursor:
         store_list.append(row)
+
+    # Gracefully close connection
     conn.close()
     logging.info('Store data retrieved.')
+
     return store_list
 
 
-def insert_xml(store, type, xml):
-    columns = { 'invoice': 'last_invoice_id',
-                'products': 'last_product-id',
-                'purchase_order': 'last_purchase_order',
-                'supplier': 'last_supplier_id',
-                'customer': 'last_customer_id',
-                'user': 'last_user_id'}
+def insert_xml(insert_values):
 
+    insert_string = "INSERT INTO Staging.Documents (Store_Code, Document_Type, Document_Text) VALUES (%s, %s, %s)"
+
+    # create connection and cursor
     conn = pymssql.connect(server, user, password, db)
     cursor = conn.cursor()
 
-    cursor.execute('''
-        INSERT INTO Staging.Documents
-        (Store_Code, Document_Type, Document_Text)
-        VALUES
-        (?, ?, ?)''', store, type, xml)
+    # bulk insert list of tuples
+    cursor.executemany(insert_string, insert_values)
+
+    # must commit unless auto-commit is enabled (it's not)
     conn.commit()
 
-
-    cursor.execute('''UPDATE Staging.lightspeed_stores
-                      SET last_invoice = %(invoice_id)s
-                      WHERE storecode = %(storecode)s;''', invoice.data)
-    conn.commit()
-
+    # close connection gracefully
     conn.close()
