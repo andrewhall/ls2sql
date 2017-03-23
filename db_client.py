@@ -1,5 +1,5 @@
-import pymssql, logging
-# from xml.etree import ElementTree
+import pymssql
+import logging
 
 # SQL login credentials
 server = '25.15.227.115'
@@ -17,6 +17,8 @@ def get_store_list():
 
     # return each row in result as a dict
     cursor = conn.cursor(as_dict=True)
+
+    # only grabbing stores with sync = 1 flag
     cursor.execute('Staging.usp_Get_Store_Data')
     for row in cursor:
         store_list.append(row)

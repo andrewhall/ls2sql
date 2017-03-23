@@ -1,4 +1,6 @@
-import requests, logging, db_client
+import requests
+import logging
+import db_client
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from xml.etree import ElementTree
 
