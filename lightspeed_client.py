@@ -29,91 +29,40 @@ def process_store(current_store):
     logging.info('%s | Store completed.' % current_store['store'])
 
 
-# def imbed_invoices(current_store, session):
-#
-#     logging.info('%s: Invoice data initiating.' % current_store['store'])
-#
-#     invoice_list = []
-#     invoice_filter = {'filter': 'id > \"%s\" AND id <= \"%s\"' % (current_store['last_invoice'],
-#                                                                   current_store['last_invoice'] + 250)}
-#     response = session.get(current_store['address'] + 'invoices/', params=invoice_filter)
-#
-#     root = ElementTree.fromstring(response.text)
-#
-#     for child in root:
-#         invoice_uri = child.get('uri')
-#         invoice_list.append(invoice_uri)
-#
-#     insert_values = []
-#
-#     for invoice in invoice_list:
-#         response = session.get(invoice)
-#
-#         root = ElementTree.fromstring(response.text)
-#
-#         temp_values = (current_store['storecode'], root.tag, ElementTree.tostring(root))
-#
-#         insert_values.append(temp_values)
-#
-#     db_client.insert_xml(insert_values)
-#
-#     logging.info('%s: Invoice data completed.' % current_store['store'])
-#
-
-# def procure_purchase_orders(current_store):
-#
-#     logging.info('%s: PO data initiating.' % current_store['store'])
-#
-#     po_list = []
-#     start = 0 # fix start and end here
-#     end = 250
-#     po_filter = {'filter': 'id > \"%s\" AND id <= \"%s\"' % (start, end)}
-#     po_url = current_store['address'] + 'purchase_orders/'
-#     response = requests.get(po_url,
-#                             params=po_filter,
-#                             auth=(current_store['username'], current_store['password']),
-#                             headers=headers,
-#                             verify=False)
-#     root = ElementTree.fromstring(response.text)
-#     for child in root:
-#         po_uri = child.get('uri')
-#         po_list.append(po_uri)
-#
-#     insert_values = []
-#
-#     for po in po_list:
-#         response = requests.get(po,
-#                                 auth=(current_store['username'], current_store['password']),
-#                                 headers=headers,
-#                                 verify=False)
-#         root = ElementTree.fromstring(response.text)
-#
-#         temp_values = (current_store['storecode'], root.tag, ElementTree.tostring(root))
-#
-#         insert_values.append(temp_values)
-#
-#     db_client.insert_xml(insert_values)
-#
-#     logging.info('%s: PO data completed.' % current_store['store'])
-#
-#
-
 def process_summary_records(current_store, session):
 
     # types of records processed in this method
     document_types = ['customers', 'users', 'suppliers', 'products']
 
-    # Loop through
+    # Loop through each document type
     for document_type in document_types:
 
         logging.info('%s | Initiating: %s data.' % (current_store['storecode'], document_type))
 
-        response = session.get(current_store['address'] + document_type + '/')
+        # Grab highest ID of uploaded document type
+        lower_bound = current_store[document_type]
 
+        # pull all records at products or users level
+        if document_type == 'products' or document_type == 'users':
+            lower_bound = 0
+
+        # grab following 250 documents from last uploaded
+        document_filter = {'filter': 'id > \"%s\"' % lower_bound}
+
+        # Make API call with session parameters and method URL
+        response = session.get(current_store['address'] + document_type + '/', params=document_filter)
+
+        # Create ET object for manipulation
         root = ElementTree.fromstring(response.text)
 
+        # Specify number of records being processed
+        logging.info('%s | Processing: %d %s records.' % (current_store['storecode'], len(root.getchildren()),
+                                                          document_type))
+
+        # Format data to be inserted into staging table
         insert_values = [(current_store['storecode'], root.tag, ElementTree.tostring(root))]
 
+        # Do the insert
         db_client.insert_xml(insert_values)
 
         logging.info('%s | Completed: %s data.' % (current_store['storecode'], document_type))
@@ -122,4 +71,59 @@ def process_summary_records(current_store, session):
 def process_detailed_records(current_store, session):
 
     # types of records processed in this method
-    document_types = ['invoices', 'purchase_orders']
+    document_types = ['invoice', 'purchase_order']
+
+    # Loop through each document type
+    for document_type in document_types:
+
+        logging.info('%s | Initiating: %s data.' % (current_store['storecode'], document_type))
+
+        while True:
+
+            # Grab highest ID of uploaded document type
+            lower_bound = current_store[document_type]
+
+            if lower_bound is None:
+                lower_bound = 0
+
+            # grab following 250 documents from last uploaded
+            document_filter = {'filter': 'id > \"%s\" AND id <= \"%s\"' % (lower_bound,
+                                                                           lower_bound + 250)}
+
+            # Make API call with session parameters and method URL/filter
+            response = session.get(current_store['address'] + document_type + 's/', params=document_filter)
+
+            # Create ET object for manipulation
+            root = ElementTree.fromstring(response.text)
+
+            # list that holds list of other documents to pull
+            document_list = []
+
+            # add uri's to list
+            for child in root:
+                document_list.append(child.get('uri'))
+
+            # Pull out of loop when no more records of this type to pull
+            if len(document_list) == 0:
+                break
+
+            # Specify number of records being processed
+            logging.info('%s | Processing: %d %s records.' % (current_store['storecode'], len(root.getchildren()),
+                                                              document_type))
+
+            # List to hold data to insert
+            insert_values = []
+
+            # Loop through list of uri's and call each one
+            for document_uri in document_list:
+
+                response = session.get(document_uri)
+
+                root = ElementTree.fromstring(response.text)
+
+                insert_values.append((current_store['storecode'], root.tag, ElementTree.tostring(root)))
+
+            # Do insert
+            db_client.insert_xml(insert_values)
+
+        logging.info('%s | Completed: %s data.' % (current_store['storecode'], document_type))

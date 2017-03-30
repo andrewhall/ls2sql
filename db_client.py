@@ -32,7 +32,7 @@ def get_store_list():
 
 def insert_xml(insert_values):
 
-    insert_string = "INSERT INTO Staging.Documents_test (Store_Code, Document_Type, Document_Text) VALUES (%s, %s, %s)"
+    insert_string = "INSERT INTO Staging.Documents (Store_Code, Document_Type, Document_Text) VALUES (%s, %s, %s)"
 
     # create connection and cursor
     conn = pymssql.connect(server, user, password, db)
