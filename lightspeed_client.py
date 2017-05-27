@@ -9,7 +9,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 def process_store(current_store):
-    logging.info('%s | Store initiating.' % current_store['store'])
+    logging.info('%s | Store initiated.' % current_store['store'])
 
     # Create persistent API session
     session = requests.Session()
@@ -37,16 +37,14 @@ def process_summary_records(current_store, session):
     # Loop through each document type
     for document_type in document_types:
 
-        logging.info('%s | Initiating: %s data.' % (current_store['storecode'], document_type))
-
         # Grab highest ID of uploaded document type
         lower_bound = current_store[document_type]
 
         # pull all records at products or users level
-        if document_type == 'products' or document_type == 'users':
+        if lower_bound is None or document_type == 'products' or document_type == 'users':
             lower_bound = 0
 
-        # grab following 250 documents from last uploaded
+        # grab following documents from last uploaded
         document_filter = {'filter': 'id > \"%s\"' % lower_bound}
 
         # Make API call with session parameters and method URL
@@ -71,24 +69,23 @@ def process_summary_records(current_store, session):
 def process_detailed_records(current_store, session):
 
     # types of records processed in this method
-    document_types = ['invoice', 'purchase_order']
+    document_types = ['purchase_order', 'invoice']
 
     # Loop through each document type
     for document_type in document_types:
 
-        logging.info('%s | Initiating: %s data.' % (current_store['storecode'], document_type))
-
         while True:
 
-            # Grab highest ID of uploaded document type
+            # Set default starting point for filter
             lower_bound = current_store[document_type]
 
+            # Update lower_bound if there are records
             if lower_bound is None:
                 lower_bound = 0
 
-            # grab following 250 documents from last uploaded
+            # Grab subset of records
             document_filter = {'filter': 'id > \"%s\" AND id <= \"%s\"' % (lower_bound,
-                                                                           lower_bound + 250)}
+                                                                           lower_bound + 500)}
 
             # Make API call with session parameters and method URL/filter
             response = session.get(current_store['address'] + document_type + 's/', params=document_filter)
@@ -107,13 +104,12 @@ def process_detailed_records(current_store, session):
             if len(document_list) == 0:
                 break
 
-            # Specify number of records being processed
-            logging.info('%s | Processing: %d %s records.' % (current_store['storecode'], len(root.getchildren()),
-                                                              document_type))
-
             # List to hold data to insert
             insert_values = []
 
+            # Specify number of records being processed
+            logging.info('%s | Processing: %d %s records.' % (current_store['storecode'], len(root.getchildren()),
+                                                              document_type))
             # Loop through list of uri's and call each one
             for document_uri in document_list:
 
@@ -125,5 +121,8 @@ def process_detailed_records(current_store, session):
 
             # Do insert
             db_client.insert_xml(insert_values)
+
+            # Update store data
+            current_store = db_client.update_store(current_store['storecode'])
 
         logging.info('%s | Completed: %s data.' % (current_store['storecode'], document_type))
