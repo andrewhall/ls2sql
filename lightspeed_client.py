@@ -14,6 +14,7 @@ def process_store(current_store):
     # Create persistent API session
     session = requests.Session()
     session.verify = False
+    session.timeout = 10
     session.auth = (current_store['username'], current_store['password'])
     session.headers.update({'User-Agent': 'com.sunsetnovelties.invoices/1.0',
                             'X-PAPPID': 'ee18ea41-2705-4189-b628-095d995d0d33',
@@ -108,11 +109,11 @@ def process_detailed_records(current_store, session):
             insert_values = []
 
             # Specify number of records being processed
-            logging.info('%s | Processing: %d %s records.' % (current_store['storecode'], len(root.getchildren()),
-                                                              document_type))
+            logging.info(
+                '%s | Processing: %d %s records.' % (current_store['storecode'], len(root.getchildren()),
+                                                     document_type))
             # Loop through list of uri's and call each one
             for document_uri in document_list:
-
                 response = session.get(document_uri)
 
                 root = ElementTree.fromstring(response.text)
@@ -126,3 +127,4 @@ def process_detailed_records(current_store, session):
             current_store = db_client.update_store(current_store['storecode'])
 
         logging.info('%s | Completed: %s data.' % (current_store['storecode'], document_type))
+

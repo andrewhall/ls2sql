@@ -4,12 +4,9 @@ import logging
 import time
 
 # format logging output
-# logging.basicConfig(filename='ls2sql.log', format='%(asctime)s - %(levelname)s - %(message)s',
-#                     datefmt='%Y.%m.%d %I:%M:%S %p', level=logging.INFO)
-
-logdatetime = time.strftime("%m%d")
-logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s',
-                    filename='../ls2sql_' + logdatetime + '.log',
+log_datetime = time.strftime("%m%d")
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename='ls2sql_' + log_datetime + '.log',
                     datefmt='%m/%d/%Y %I:%M:%S %p',
                     level=logging.INFO)
 
@@ -28,3 +25,20 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+attempts = 0
+
+# while attempts < 3:
+#     try:
+#
+#
+#
+#     except Exception as e:
+#
+#         # log exception
+#         logging.error('Failed to retrieve %s data: ' + str(e) % document_type)
+#
+#         # increase attempt counter
+#         attempts += 1
+#
+#         continue
