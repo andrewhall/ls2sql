@@ -1,11 +1,16 @@
 import pymssql
 import logging
+import configparser
+
+# Prepare configparser
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 # SQL login credentials
-server = '25.15.227.115'
-user = 'Lightspeed'
-password = 'Lightspeed123'
-db = 'Staging'
+server = config['DEFAULT']['server']
+user = config['DEFAULT']['user']
+password = config['DEFAULT']['password']
+db = config['DEFAULT']['db']
 
 
 # retrieve store information from SQL
@@ -40,7 +45,7 @@ def get_store_list():
         except Exception as e:
 
             # log exception
-            logging.error('Failed to retrieve store data: ' + str(e))
+            logging.error('Failed to retrieve store data. Exception: %s' % str(e))
 
             # increase attempt counter
             attempts += 1
@@ -78,7 +83,8 @@ def update_store(storecode):
         except Exception as e:
 
             # log exception
-            logging.error('Failed to update store data: ' + str(e))
+            logging.error('Failed to update store data.')
+            logging.error('Exception: ' + str(e))
 
             # increase attempt counter
             attempts += 1
@@ -116,7 +122,7 @@ def insert_xml(insert_values):
         except Exception as e:
 
             # log exception
-            logging.error('Failed to insert data: ' + str(e))
+            logging.error('Failed to insert data. Exception: %s' % str(e))
 
             # increase attempt counter
             attempts += 1
@@ -126,3 +132,34 @@ def insert_xml(insert_values):
 
     # exit application
     quit()
+
+
+def run_import_process():
+
+    logging.info('Import stored proc started.')
+
+    attempts = 0
+
+    while attempts < 3:
+        try:
+
+            # Create connection to server
+            conn = pymssql.connect(server, user, password, db)
+
+            # return each row in result as a dict
+            cursor = conn.cursor(as_dict=True)
+
+            # Run proc
+            cursor.callproc('Staging.usp_Run_Import')
+
+            # Gracefully close connection
+            conn.close()
+            logging.info('Import stored proc executed.')
+
+        except Exception as e:
+
+            # log exception
+            logging.error('Failed to execute stored proc. Exception: %s' % str(e))
+
+            # increase attempt counter
+            attempts += 1
