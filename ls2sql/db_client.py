@@ -4,7 +4,7 @@ import configparser
 
 # Prepare configparser
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('../docs/config.ini')
 
 # SQL login credentials
 server = config['DEFAULT']['server']
