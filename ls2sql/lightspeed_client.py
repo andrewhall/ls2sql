@@ -70,12 +70,12 @@ def process_summary_records(current_store, session):
         while attempts < 3:
             try:
 
-                # Grab highest ID of uploaded document type
-                lower_bound = current_store[document_type]
+                #set initial lower_bound
+                lower_bound = 0
 
                 # pull all records at products or users level
-                if lower_bound is None or document_type == 'products' or document_type == 'users':
-                    lower_bound = 0
+                if document_type != 'products' and document_type != 'users' and current_store[document_type] is not None:
+                    lower_bound = current_store[document_type]
 
                 # grab following documents from last uploaded
                 document_filter = {'filter': 'id > \"%s\"' % lower_bound}

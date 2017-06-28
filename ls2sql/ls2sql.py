@@ -8,7 +8,7 @@ version = '1.0.0'
 # format logging output
 log_datetime = time.strftime("%m%d")
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
-                    filename='../ls2sql/logs/ls2sql_' + log_datetime + '.log',
+                    filename='../logs/ls2sql_' + log_datetime + '.log',
                     datefmt='%m/%d/%Y %I:%M:%S %p',
                     level=logging.INFO)
 

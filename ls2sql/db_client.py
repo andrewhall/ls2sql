@@ -4,7 +4,7 @@ import configparser
 
 # Prepare configparser
 config = configparser.ConfigParser()
-config.read('../docs/config.ini')
+config.read('config.ini')
 
 # SQL login credentials
 server = config['DEFAULT']['server']
@@ -29,7 +29,7 @@ def get_store_list():
             cursor = conn.cursor(as_dict=True)
 
             # Grab stores
-            cursor.execute('Staging.usp_Get_Store_Data')
+            cursor.execute('Staging.usp_Get_Store_Data2')
 
             logging.info('Retrieving store data.')
 
@@ -72,7 +72,7 @@ def update_store(storecode):
             cursor = conn.cursor(as_dict=True)
 
             # Grab stores
-            cursor.execute('Staging.usp_Get_Store_Data %s' % storecode)
+            cursor.execute('Staging.usp_Get_Store_Data2 %s' % storecode)
             updated_store = cursor.fetchone()
 
             # Gracefully close connection
